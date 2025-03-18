@@ -1,0 +1,41 @@
+<input type="file" id="fileInput">
+<button onclick="requestHistory()">查看历史</button>
+<div id="chatArea"></div>
+
+<script>
+const ws = new WebSocket("ws://mc.potatoblock.top:8765")
+
+// 文本消息处理
+ws.onmessage = event => {
+    const msg = JSON.parse(event.data)
+    const div = document.createElement("div")
+    div.innerHTML = `${msg.timestamp}: ${msg.content}`
+    document.getElementById("chatArea").appendChild(div)
+}
+
+// 文件发送
+document.getElementById("fileInput").onchange = async function(e) {
+    const file = e.target.files
+    const reader = new FileReader()
+    reader.onload = () => {
+        ws.send(JSON.stringify({
+            type: "file",
+            content: {
+                name: file.name,
+                data: reader.result.split(",")‌:ml-citation{ref="6" data="citationList"} // 提取Base64数据
+            },
+            timestamp: new Date().toISOString()
+        }))
+    }
+    reader.readAsDataURL(file)
+}
+
+// 历史请求
+function requestHistory() {
+    ws.send(JSON.stringify({
+        type: "history_request",
+        content: { limit: 50 },
+        timestamp: new Date().toISOString()
+    }))
+}
+</script>
