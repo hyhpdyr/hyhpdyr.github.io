@@ -1,48 +1,38 @@
-<!-- index.html -->
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>匿名聊天室</title>
+    <meta charset="UTF-8">
+    <title>WebSocket Chat</title>
 </head>
 <body>
-    <div id="chat" style="height:400px; overflow-y:scroll; border:1px solid #ccc;"></div>
-    <input type="text" id="message" style="width:300px;">
-    <button onclick="sendMessage()">发送</button>
+<div id="chat"></div>
+<input type="text" id="messageInput" placeholder="Type your message">
+<button onclick="sendMessage()">Send</button>
 
-    <script>
-        const ws = new WebSocket('ws://localhost:8765');
-        const chatDiv = document.getElementById('chat');
-        
-        // 接收消息
-        ws.onmessage = (event) => {
-            const data = JSON.parse(event.data);
-            const msgElement = document.createElement('div');
-            
-            if(data.type === 'system') {
-                msgElement.innerHTML = `<span style="color:gray">${data.content}</span>`;
-                if(data.history) {
-                    data.history.forEach(msg => renderMessage(msg));
-                }
-            } else {
-                renderMessage(data);
-            }
-            chatDiv.appendChild(msgElement);
-            chatDiv.scrollTop = chatDiv.scrollHeight;
-        };
+<script>
+    const socket = new WebSocket('ws://mc.potatoblock.top:8888');
 
-        function renderMessage(msg) {
-            const element = document.createElement('div');
-            element.innerHTML = `
-                [${msg.time}] <b>${msg.user}</b>: ${msg.content}
-            `;
-            return element;
-        }
+    socket.onopen = (event) => {
+        console.log('WebSocket connection opened:', event);
+    };
 
-        function sendMessage() {
-            const input = document.getElementById('message');
-            ws.send(input.value);
-            input.value = '';
-        }
-    </script>
+    socket.onmessage = (event) => {
+        const messageDiv = document.getElementById('chat');
+        const messageParagraph = document.createElement('p');
+        messageParagraph.textContent = event.data;
+        messageDiv.appendChild(messageParagraph);
+    };
+
+    socket.onclose = (event) => {
+        console.log('WebSocket connection closed:', event);
+    };
+
+    function sendMessage() {
+        const messageInput = document.getElementById('messageInput');
+        const message = messageInput.value;
+        socket.send(message);
+        messageInput.value = '';
+    }
+</script>
 </body>
 </html>
